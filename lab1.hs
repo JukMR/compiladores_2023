@@ -15,7 +15,7 @@ type State = Σ
 
 -- Alias para escribir sigma
 
-type Sigma = σ
+-- type Sigma = σ
 
 -- Función de actualización de estado
 update :: Σ -> Iden -> Int -> Σ
@@ -128,14 +128,15 @@ instance DomSem Bool where
 (+.) f (Abort σ)  = f σ
 
 instance DomSem Ω where
-  sem Skip σ = Normal σ
---   sem Local Sigma =
-  sem Assign var Sigma =
-  sem Fail Sigma =
-  sem Catch Sigma =
-  sem While Sigma =
-  sem If Sigma =
-  sem Seq Sigma =
+  sem Skip s = Normal s
+  sem Fail s = Abort s
+  -- TODO: Check the following function
+  sem (Local var int body) s = sem body (update s var (sem int s))
+  sem (Assign var int) s  = Normal (update s var (sem int s))
+--   sem (While cond body) s = fix f
+  sem (If cond com1 com2) s = if sem cond s then sem com1 s else sem com2 s
+  sem (Catch body except) s = (+.) (sem except) (sem body s)
+  sem (Seq com1 com2) s = (*.) (sem com2) (sem com1 s)
   sem e _    = undefined
 
 {- ################# Funciones de evaluación de dom ################# -}
@@ -180,7 +181,7 @@ prog3 =
     (Local "x" (Const 7) Fail)
     Skip
 
--- ejemplo3 = eval "[x]" prog3 eIniTest
+ejemplo3 = eval ["x"] prog3 eIniTest
 
 {- División y Resto -}
 
