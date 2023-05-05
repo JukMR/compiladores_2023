@@ -13,6 +13,10 @@ type Σ = Iden -> Int
 -- Alias por si escribir Σ les resulta complicado
 type State = Σ
 
+-- Alias para escribir sigma
+
+type Sigma = σ
+
 -- Función de actualización de estado
 update :: Σ -> Iden -> Int -> Σ
 update σ v n v' =
@@ -101,11 +105,17 @@ instance DomSem Int where
   sem (Const a) _    = a
   sem (Var v) σ      = σ v
   sem (Plus e1 e2) σ = sem e1 σ + sem e2 σ
-  sem e _            = undefined
+  sem (Dif e1 e2) σ = sem e1 σ - sem e2 σ
+  sem (Times e1 e2) σ = sem e1 σ * sem e2 σ
+  sem (Div e1 e2) σ = div (sem e1 σ) ( sem e2 σ)
 
 instance DomSem Bool where
   sem (Eq e1 e2) σ = sem e1 σ == sem e2 σ
-  sem e _          = undefined
+  sem (Neq e1 e2) σ = sem e1 σ /= sem e2 σ
+  sem (Less e1 e2) σ = sem e1 σ < sem e2 σ
+  sem (And e1 e2) σ = sem e1 σ && sem e2 σ
+  sem (Or e1 e2) σ = sem e1 σ || sem e2 σ
+  sem (Not e1) σ = not (sem e1 σ)
 
 {- Función de control para Ω -}
 
@@ -119,6 +129,13 @@ instance DomSem Bool where
 
 instance DomSem Ω where
   sem Skip σ = Normal σ
+--   sem Local Sigma =
+  sem Assign var Sigma =
+  sem Fail Sigma =
+  sem Catch Sigma =
+  sem While Sigma =
+  sem If Sigma =
+  sem Seq Sigma =
   sem e _    = undefined
 
 {- ################# Funciones de evaluación de dom ################# -}
@@ -163,7 +180,7 @@ prog3 =
     (Local "x" (Const 7) Fail)
     Skip
 
-ejemplo3 = eval "[x]" prog3 eIniTest
+-- ejemplo3 = eval "[x]" prog3 eIniTest
 
 {- División y Resto -}
 
