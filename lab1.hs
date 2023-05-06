@@ -131,10 +131,9 @@ instance DomSem Bool where
 instance DomSem Ω where
   sem Skip s = Normal s
   sem Fail s = Abort s
-  sem (Assign v i) s  = Normal (update s v (sem i s))
-  -- TODO: Check the following function
-  -- sem (Local v e c) s = update ( sem c (update s v (sem e s) ) ) v (s v)
-  sem (Local v e c) s = (++.) (\s' -> Normal (update s' v (s v))) ((++.) (sem c) (sem (Assign v e) s) )
+  sem (Assign v e) s  = Normal (update s v (sem e s))
+  sem (Local v e c) s = (++.) (\s' -> sem (Assign v (Const (s v))) s') ((++.) (sem c) (sem (Assign v e) s) )
+  -- TODO: check this, while is crashing
   sem (While b c) s = fix f s
                           where
                             f w s' = if sem b s then (*.) w (sem c s') else Normal s
