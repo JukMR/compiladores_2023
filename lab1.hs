@@ -242,10 +242,9 @@ test2 = eval ["x", "y", "c"] program2 (eInicial)
 
 -- While
 
-program3 =
-          While
-            ( Not ( Eq (Var "x") (Const 10) ) )
-            ( Assign "x" ( Plus (Var "x") (Const 1) ) )
+program3 = While
+            ( Less (Var "x") (Const 10) )
+            ( Assign "x" ( Plus (Var "y") (Const 1) ) )
 
 test3 a = eval ["x"] program3 $
       update eInicial "x" a
@@ -255,3 +254,16 @@ test3 a = eval ["x"] program3 $
 program4 = Local "x" (Const 3) Skip
 
 test4 = eval ["x"] program4 eIniTest
+
+-- Catch
+-- x should be 36
+
+program5a = Seq (Catch Fail Skip) (Assign "x" (Const 36))
+
+test5a = eval["x"] program5a eIniTest
+
+-- x should be 0
+program5b = Seq (Catch Skip Fail) (Assign "x" (Const 36))
+
+test5b = eval["x"] program5b eIniTest
+
