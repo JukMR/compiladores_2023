@@ -123,17 +123,24 @@ instance DomSem Bool where
 (+.) _ (Normal σ) = Normal σ
 (+.) f (Abort σ)  = f σ
 
+-- dagger
+(++.) :: (Σ -> Ω) -> Ω -> Ω
+(++.) f (Normal σ) = f σ
+(++.) f (Abort σ)  = f σ
+
 instance DomSem Ω where
   sem Skip s = Normal s
   sem Fail s = Abort s
+  sem (Assign v i) s  = Normal (update s v (sem i s))
   -- TODO: Check the following function
-  sem (Local var int body) s = sem body (update s var (sem int s))
-  sem (Assign var int) s  = Normal (update s var (sem int s))
---   sem (While cond body) s = fix f
+  -- sem (Local v e c) s = update ( sem c (update s v (sem e s) ) ) v (s v)
+  sem (Local v e c) s = (++.) (\s' -> Normal (update s' v (s v))) ((++.) (sem c) (sem (Assign v e) s) )
+  sem (While b c) s = fix f s
+                          where
+                            f w s' = if sem b s then (*.) w (sem c s') else Normal s
   sem (If cond com1 com2) s = if sem cond s then sem com1 s else sem com2 s
-  sem (Catch body except) s = (+.) (sem except) (sem body s)
-  sem (Seq com1 com2) s = (*.) (sem com2) (sem com1 s)
-  sem e _    = undefined
+  sem (Catch c0 c1) s = (+.) (sem c1) (sem c0 s)
+  sem (Seq c1 c2) s = (*.) (sem c2) (sem c1 s)
 
 {- ################# Funciones de evaluación de dom ################# -}
 class Eval dom where
