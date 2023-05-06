@@ -13,10 +13,6 @@ type Σ = Iden -> Int
 -- Alias por si escribir Σ les resulta complicado
 type State = Σ
 
--- Alias para escribir sigma
-
--- type Sigma = σ
-
 -- Función de actualización de estado
 update :: Σ -> Iden -> Int -> Σ
 update σ v n v' =
@@ -28,8 +24,8 @@ update σ v n v' =
     saber cuánto termina valiendo una variable  -}
 
 eInicial, eIniTest :: Σ
-eInicial = \v -> undefined
-eIniTest = \v -> 0
+eInicial = \_ -> undefined
+eIniTest = \_ -> 0
 
 {- Ω ≈ Σ + Σ -}
 data Ω
