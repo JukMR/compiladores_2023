@@ -159,6 +159,7 @@ instance Eval Ω where
       elsigma (Abort σ)  = σ
       f s var = putStrLn (var ++ " vale " ++ (show (s var)))
 
+-- Ejemplo 1
 {- Usen esto con eInicial o eIniTest pasando una lista de variables -}
 prog1 = Assign "x" (Const 8)
 
@@ -166,6 +167,7 @@ ejemplo1 = eval ["x"] prog1 eIniTest
 
 {- Debe devolver 4 en "x" y 5 en "y" -}
 
+-- Ejemplo 2
 prog2 = Seq
           (Seq
             (Assign "x" (Const 3))
@@ -179,6 +181,7 @@ ejemplo2 = eval ["x", "y"] prog2 eInicial
 
 {- Este programa debe comportarse como Skip -}
 
+-- Ejemplo 3
 prog3 =
   Catch
     (Local "x" (Const 7) Fail)
@@ -188,6 +191,7 @@ ejemplo3 = eval ["x"] prog3 eIniTest
 
 {- División y Resto -}
 
+-- Ejemplo 4
 progDivMod =
   If
     (Or
@@ -220,3 +224,35 @@ progDivMod =
 
 ejemploDivMod a b = eval ["x", "y"] progDivMod $
   update (update eInicial "x" a) "y" b
+
+-- My own testing
+
+-- Asignaciones
+program1 = Seq
+            (Assign "x" (Const 10))
+            (Assign "y" (Const 20))
+
+test1 = eval ["x", "y", "c"] program1 (eIniTest)
+
+-- Condicional
+program2 = Seq
+          program1
+          ( If ( Eq (Var "x") (Var "y")) (Assign "c" (Const 1) ) ( Assign "c" (Const 2) ) )
+
+test2 = eval ["x", "y", "c"] program2 (eInicial)
+
+-- While
+
+program3 =
+          While
+            ( Not ( Eq (Var "x") (Const 10) ) )
+            ( Assign "x" ( Plus (Var "x") (Const 1) ) )
+
+test3 a = eval ["x"] program3 $
+      update eInicial "x" a
+
+-- Newvar
+
+program4 = Local "x" (Const 3) Skip
+
+test4 = eval ["x"] program4 eIniTest
