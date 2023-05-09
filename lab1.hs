@@ -240,7 +240,10 @@ test1 = eval ["x", "y", "c"] program1 (eIniTest)
 -- Conditional
 program2 = Seq
           (Assign "c" (Const 3 ))
-          ( If ( Eq (Var "x") (Var "y")) (Assign "c" (Const 1) ) ( Assign "c" (Const 2) ) )
+          ( If ( Eq (Var "x") (Var "y"))
+              (Assign "c" (Const 1) )
+              ( Assign "c" (Const 2) )
+          )
 
 test2 a b c = eval ["x", "y", "c"] program2 $
               (update (update (update eIniTest "x" a) "y" b) "c" c)
@@ -249,7 +252,9 @@ test2 a b c = eval ["x", "y", "c"] program2 $
 
 program3 = While
             ( Less (Var "x") (Const 10) )
-            ( Assign "x" ( Plus (Var "x") (Const 1) ) )
+            ( Assign "x"
+              ( Plus (Var "x") (Const 1) )
+            )
 
 
 test3 a = eval ["x"] program3 $
@@ -283,12 +288,41 @@ test6 = eval ["x"] program6 eIniTest
 -- Nuevo While. Esta bien que no cambie el valor dentro del while?
 
 program7 = Seq
-          (Seq
-           (Assign "x" (Const 3))
-           ( While
-              ( Less (Var "x") (Const 10) )
-              ( Assign "x" ( Plus (Var "x") (Const 1) ) )))
-            (Assign "x" (Plus (Var "x") (Const 1)))
+              (Seq
+                (Assign "x" (Const 3))
+                ( While
+                    ( Less (Var "x") (Const 10) )
+                    ( Assign "x" (Plus (Var "x") (Const 1)) )
+                )
+              )
+              (Assign "x" (
+                Plus (Var "x") (Const 1) )
+              )
 
 
 test7 = eval ["x"] program7 eInicial
+
+-- Division
+test8 = sem (Div (Const 11) (Const 5)) (eInicial)
+
+-- Plus
+
+test9 = sem (Plus (Const 15) (Const 13)) eInicial
+test10 = sem (Plus (Const 15) (Const (-18))) eInicial
+
+-- Dif
+test11 = sem (Dif (Const 15) (Const (-18))) eInicial
+
+-- Times
+test12 = sem (Times (Const 15) (Const (3))) eInicial
+
+-- Bools
+-- equal
+my_true = Eq (Const 1) (Const 1)
+my_false = Not(my_true)
+
+test13 = sem (And (my_true) (my_true)) eInicial
+test14 = sem (Or (my_true) (my_true)) eInicial
+
+test15 = sem (And (my_false) (my_true)) eInicial
+test16 = sem (Or (my_false) (my_true)) eInicial
