@@ -103,7 +103,8 @@ instance DomSem Int where
   sem (Plus e1 e2) σ = sem e1 σ + sem e2 σ
   sem (Dif e1 e2) σ = sem e1 σ - sem e2 σ
   sem (Times e1 e2) σ = sem e1 σ * sem e2 σ
-  sem (Div e1 e2) σ = div (sem e1 σ) ( sem e2 σ)
+  sem (Div e1 e2) σ | sem e2 σ  /= 0 = div (sem e1 σ) (sem e2 σ)
+                    | otherwise = 0
 
 instance DomSem Bool where
   sem (Eq e1 e2) σ = sem e1 σ == sem e2 σ
@@ -136,8 +137,12 @@ instance DomSem Ω where
   -- TODO: check this, while is crashing
   sem (While b c) s = fix f s
                           where
-                            f w s' = if sem b s then (*.) w (sem c s') else Normal s
-  sem (If cond com1 com2) s = if sem cond s then sem com1 s else sem com2 s
+                            f w s' | sem b s = (*.) w (sem c s')
+                                   | otherwise = Normal s
+
+  sem (If b c1 c2) s | sem b s = sem c1 s
+                     | otherwise = sem c2 s
+
   sem (Catch c0 c1) s = (+.) (sem c1) (sem c0 s)
   sem (Seq c1 c2) s = (*.) (sem c2) (sem c1 s)
 
@@ -226,25 +231,28 @@ ejemploDivMod a b = eval ["x", "y"] progDivMod $
 
 -- My own testing
 
--- Asignaciones
+-- Assignations
 program1 = Seq
             (Assign "x" (Const 10))
             (Assign "y" (Const 20))
 
 test1 = eval ["x", "y", "c"] program1 (eIniTest)
 
--- Condicional
+-- Conditional
 program2 = Seq
-          program1
+          (Assign "c" (Const 3 ))
           ( If ( Eq (Var "x") (Var "y")) (Assign "c" (Const 1) ) ( Assign "c" (Const 2) ) )
 
-test2 = eval ["x", "y", "c"] program2 (eInicial)
+test2 a b c = eval ["x", "y", "c"] program2 $
+              (update (update (update eIniTest "x" a) "y" b) "c" c)
 
 -- While
 
 program3 = While
             ( Less (Var "x") (Const 10) )
-            ( Assign "x" ( Plus (Var "x") (Const 1) ) )
+            -- ( Assign "x" ( Plus (Var "x") (Const 1) ) )
+            ( Assign "x" ( Const 10) )
+
 
 test3 a = eval ["x"] program3 $
       (update eIniTest "x" a)
@@ -260,10 +268,17 @@ test4 = eval ["x"] program4 eIniTest
 
 program5a = Seq (Catch Fail Skip) (Assign "x" (Const 36))
 
-test5a = eval["x"] program5a eIniTest
+test5a = eval ["x"] program5a eIniTest
 
 -- x should be 36 because it always assign
 program5b = Seq (Catch Skip Fail) (Assign "x" (Const 36))
 
-test5b = eval["x"] program5b eIniTest
+test5b = eval ["x"] program5b eIniTest
+
+-- Div by 0
+
+program6 = Div (Const 3) (Const 0)
+
+
+test6 = eval ["x"] program6 eIniTest
 
