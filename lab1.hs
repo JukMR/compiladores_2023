@@ -124,15 +124,15 @@ instance DomSem Bool where
 (+.) f (Abort σ)  = f σ
 
 -- dagger
-(++.) :: (Σ -> Ω) -> Ω -> Ω
-(++.) f (Normal σ) = f σ
-(++.) f (Abort σ)  = f σ
+(++.) :: (Σ -> Σ) -> Ω -> Ω
+(++.) f (Normal σ) = Normal (f σ)
+(++.) f (Abort σ)  = Abort (f σ)
 
 instance DomSem Ω where
   sem Skip s = Normal s
   sem Fail s = Abort s
   sem (Assign v e) s  = Normal (update s v (sem e s))
-  sem (Local v e c) s = (++.) (\s' -> sem (Assign v (Const (s v))) s') ((++.) (sem c) (sem (Assign v e) s) )
+  sem (Local v e c) s = (++.) (\s' -> update s' v (s v)) ((sem c) (update s v (sem e s)))
   -- TODO: check this, while is crashing
   sem (While b c) s = fix f s
                           where
@@ -244,10 +244,10 @@ test2 = eval ["x", "y", "c"] program2 (eInicial)
 
 program3 = While
             ( Less (Var "x") (Const 10) )
-            ( Assign "x" ( Plus (Var "y") (Const 1) ) )
+            ( Assign "x" ( Plus (Var "x") (Const 1) ) )
 
 test3 a = eval ["x"] program3 $
-      update eInicial "x" a
+      (update eIniTest "x" a)
 
 -- Newvar
 
@@ -262,7 +262,7 @@ program5a = Seq (Catch Fail Skip) (Assign "x" (Const 36))
 
 test5a = eval["x"] program5a eIniTest
 
--- x should be 0
+-- x should be 36 because it always assign
 program5b = Seq (Catch Skip Fail) (Assign "x" (Const 36))
 
 test5b = eval["x"] program5b eIniTest
