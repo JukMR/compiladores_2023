@@ -134,10 +134,9 @@ instance DomSem Ω where
   sem Fail s = Abort s
   sem (Assign v e) s  = Normal (update s v (sem e s))
   sem (Local v e c) s = (++.) (\s' -> update s' v (s v)) ((sem c) (update s v (sem e s)))
-  -- TODO: check this, while is crashing
   sem (While b c) s = fix f s
                           where
-                            f w s' | sem b s = (*.) w (sem c s')
+                            f w s' | sem b s' = (*.) w (sem c s')
                                    | otherwise = Normal s
 
   sem (If b c1 c2) s | sem b s = sem c1 s
@@ -250,8 +249,7 @@ test2 a b c = eval ["x", "y", "c"] program2 $
 
 program3 = While
             ( Less (Var "x") (Const 10) )
-            -- ( Assign "x" ( Plus (Var "x") (Const 1) ) )
-            ( Assign "x" ( Const 10) )
+            ( Assign "x" ( Plus (Var "x") (Const 1) ) )
 
 
 test3 a = eval ["x"] program3 $
@@ -282,3 +280,15 @@ program6 = Div (Const 3) (Const 0)
 
 test6 = eval ["x"] program6 eIniTest
 
+-- Nuevo While. Esta bien que no cambie el valor dentro del while?
+
+program7 = Seq
+          (Seq
+           (Assign "x" (Const 3))
+           ( While
+              ( Less (Var "x") (Const 10) )
+              ( Assign "x" ( Plus (Var "x") (Const 1) ) )))
+            (Assign "x" (Plus (Var "x") (Const 1)))
+
+
+test7 = eval ["x"] program7 eInicial
