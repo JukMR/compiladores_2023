@@ -24,8 +24,8 @@ update σ v n v' =
     saber cuánto termina valiendo una variable  -}
 
 eInicial, eIniTest :: Σ
-eInicial = \_ -> undefined
-eIniTest = \_ -> 0
+eInicial _ = undefined
+eIniTest _ =  0
 
 {- Ω ≈ Σ + Σ -}
 data Ω
