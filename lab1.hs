@@ -143,7 +143,7 @@ instance DomSem Ω where
                      | otherwise = sem c2 s
 
   sem (Catch c0 c1) s = (+.) (sem c1) (sem c0 s)
-  sem (Seq c1 c2) s = (*.) (sem c2) (sem c1 s)
+  sem (Seq c0 c1) s = (*.) (sem c1) (sem c0 s)
 
 {- ################# Funciones de evaluación de dom ################# -}
 class Eval dom where
