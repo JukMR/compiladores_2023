@@ -164,9 +164,11 @@ instance Eval Ω where
 
 -- Ejemplo 1
 {- Usen esto con eInicial o eIniTest pasando una lista de variables -}
+
 prog1 :: Expr Ω
 prog1 = Assign "x" (Const 8)
 
+-- Debe devolver 8
 ejemplo1 :: IO ()
 ejemplo1 = eval ["x"] prog1 eIniTest
 
@@ -242,75 +244,82 @@ ejemploDivMod a b = eval ["x", "y"] progDivMod $
 -- Implementaciones de test propias
 --
 --
---
+-- Ejemplo 5
 -- Assignations
-program1 :: Expr Ω
-program1 = Seq
+prog5 :: Expr Ω
+prog5 = Seq
             (Assign "x" (Const 10))
             (Assign "y" (Const 20))
 
-test1 :: IO ()
-test1 = eval ["x", "y", "c"] program1 (eIniTest)
+test5 :: IO ()
+test5 = eval ["x", "y", "c"] prog1 (eIniTest)
 
+-- Ejemplo 6
 -- Conditional
-program2 :: Expr Ω
-program2 = Seq
+prog6 :: Expr Ω
+prog6 = Seq
           (Assign "c" (Const 3 ))
           ( If ( Eq (Var "x") (Var "y"))
               (Assign "c" (Const 1) )
               ( Assign "c" (Const 2) )
           )
 
-test2 :: Int -> Int -> Int -> IO ()
-test2 a b c = eval ["x", "y", "c"] program2 $
+test6 :: Int -> Int -> Int -> IO ()
+test6 a b c = eval ["x", "y", "c"] prog6 $
               (update (update (update eIniTest "x" a) "y" b) "c" c)
 
+-- Ejemplo 7
 -- While
-program3 :: Expr Ω
-program3 = While
+prog7 :: Expr Ω
+prog7 = While
             ( Less (Var "x") (Const 10) )
             ( Assign "x"
               ( Plus (Var "x") (Const 1) )
             )
 
 
-test3 :: Int -> IO ()
-test3 a = eval ["x"] program3 $
+test7 :: Int -> IO ()
+test7 a = eval ["x"] prog7 $
       (update eIniTest "x" a)
 
+-- Ejemplo 8
 -- Newvar
-program4 :: Expr Ω
-program4 = Local "x" (Const 3) Skip
+prog8 :: Expr Ω
+prog8 = Local "x" (Const 3) Skip
 
-test4 :: IO ()
-test4 = eval ["x"] program4 eIniTest
+test8 :: IO ()
+test8 = eval ["x"] prog8 eIniTest
 
+-- Ejemplo 9
 -- Catch
 -- x deberia ser 36
-program5a :: Expr Ω
-program5a = Seq (Catch Fail Skip) (Assign "x" (Const 36))
+prog9a :: Expr Ω
+prog9a = Seq (Catch Fail Skip) (Assign "x" (Const 36))
 
-test5a :: IO ()
-test5a = eval ["x"] program5a eIniTest
+test9a :: IO ()
+test9a = eval ["x"] prog9a eIniTest
 
+-- Ejemplo 10
 -- x deberia ser 36 porque Asign asigna siempre aunque falle
-program5b :: Expr Ω
-program5b = Seq (Catch Skip Fail) (Assign "x" (Const 36))
+prog10b :: Expr Ω
+prog10b = Seq (Catch Skip Fail) (Assign "x" (Const 36))
 
-test5b :: IO ()
-test5b = eval ["x"] program5b eIniTest
+test10b :: IO ()
+test10b = eval ["x"] prog10b eIniTest
 
+-- Ejemplo 11
 -- Div by 0
-program6 :: Expr Int
-program6 = Div (Const 3) (Const 0)
+prog11 :: Expr Int
+prog11 = Div (Const 3) (Const 0)
 
 
-test6 :: IO ()
-test6 = eval ["x"] program6 eIniTest
+test11 :: IO ()
+test11 = eval ["x"] prog11 eIniTest
 
+-- Ejemplo 12
 -- Nuevo While. Esta bien que no cambie el valor dentro del while?
-program7 :: Expr Ω
-program7 = Seq
+prog12 :: Expr Ω
+prog12 = Seq
               (Seq
                 (Assign "x" (Const 3))
                 ( While
@@ -323,29 +332,33 @@ program7 = Seq
               )
 
 
-test7 :: IO ()
-test7 = eval ["x"] program7 eInicial
+test12 :: IO ()
+test12 = eval ["x"] prog12 eInicial
 
 
+-- Ejemplo 13
 -- Division
-test8 :: Int
-test8 = sem (Div (Const 11) (Const 5)) (eInicial)
+test13 :: Int
+test13 = sem (Div (Const 11) (Const 5)) (eInicial)
 
+-- Ejemplo 14
 -- Plus
-test9 :: Int
-test9 = sem (Plus (Const 15) (Const 13)) eInicial
+test14 :: Int
+test14 = sem (Plus (Const 15) (Const 13)) eInicial
 
-test10 :: Int
-test10 = sem (Plus (Const 15) (Const (-18))) eInicial
+-- Ejemplo 15
+test15 :: Int
+test15 = sem (Plus (Const 15) (Const (-18))) eInicial
 
-
+-- Ejemplo 16
 -- Dif
-test11 :: Int
-test11 = sem (Dif (Const 15) (Const (-18))) eInicial
+test16 :: Int
+test16 = sem (Dif (Const 15) (Const (-18))) eInicial
 
+-- Ejemplo 17
 -- Times
-test12 :: Int
-test12 = sem (Times (Const 15) (Const (3))) eInicial
+test17 :: Int
+test17 = sem (Times (Const 15) (Const (3))) eInicial
 
 -- Bools
 -- equal
@@ -356,14 +369,55 @@ my_true = Eq (Const 1) (Const 1)
 my_false :: Expr Bool
 my_false = Not(my_true)
 
-test13 :: Bool
-test13 = sem (And (my_true) (my_true)) eInicial
+-- Ejemplo 18
+test18 :: Bool
+test18 = sem (And (my_true) (my_true)) eInicial
 
-test14 :: Bool
-test14 = sem (Or (my_true) (my_true)) eInicial
+-- Ejemplo 19
+test19 :: Bool
+test19 = sem (Or (my_true) (my_true)) eInicial
 
-test15 :: Bool
-test15 = sem (And (my_false) (my_true)) eInicial
+-- Ejemplo 20
+test20 :: Bool
+test20 = sem (Not(And (my_false) (my_true))) eInicial
 
-test16 :: Bool
-test16 = sem (Or (my_false) (my_true)) eInicial
+-- Ejemplo 21
+test21 :: Bool
+test21 = sem (Or (my_false) (my_true)) eInicial
+
+
+-- =====================================
+-- Chequeo de tests
+-- =====================================
+
+get_sigma_from_omega :: Ω -> Σ
+get_sigma_from_omega (Normal s) = s
+get_sigma_from_omega (Abort s) = s
+
+bool_tests :: Bool
+bool_tests = and [test18, test19, test20, test21]
+
+assert_prog1 :: Bool
+assert_prog1 = get_sigma_from_omega (sem prog1 eInicial) "x" == 8
+
+assert_prog2_x :: Bool
+assert_prog2_x = get_sigma_from_omega (sem prog2 eInicial) "x" == 4
+
+assert_prog2_y :: Bool
+assert_prog2_y = get_sigma_from_omega (sem prog2 eInicial) "y" == 5
+
+assert_prog2 :: Bool
+assert_prog2 = assert_prog2_x && assert_prog2_y
+
+assert_prog3 :: Bool
+assert_prog3 = get_sigma_from_omega (sem prog3 eIniTest) "x" == 0
+
+assert_ejemplo_div_mod_x :: Bool
+assert_ejemplo_div_mod_x = get_sigma_from_omega (sem progDivMod (update (update eInicial "x" 13) "y" 2) ) "x" == 6
+
+assert_ejemplo_div_mod_y :: Bool
+assert_ejemplo_div_mod_y = get_sigma_from_omega (sem progDivMod (update (update eInicial "x" 13) "y" 2) ) "y" == 1
+
+
+assert_ejemplo_div_mod :: Bool
+assert_ejemplo_div_mod = assert_ejemplo_div_mod_x && assert_ejemplo_div_mod_y
