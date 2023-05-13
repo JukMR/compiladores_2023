@@ -164,13 +164,16 @@ instance Eval Ω where
 
 -- Ejemplo 1
 {- Usen esto con eInicial o eIniTest pasando una lista de variables -}
+prog1 :: Expr Omega
 prog1 = Assign "x" (Const 8)
 
+ejemplo1 :: IO ()
 ejemplo1 = eval ["x"] prog1 eIniTest
 
 {- Debe devolver 4 en "x" y 5 en "y" -}
 
 -- Ejemplo 2
+prog2 :: Expr Omega
 prog2 = Seq
           (Seq
             (Assign "x" (Const 3))
@@ -180,21 +183,25 @@ prog2 = Seq
             (Div (Plus (Var "x") (Var "y")) (Const 2))
           )
 
+ejemplo2 :: IO ()
 ejemplo2 = eval ["x", "y"] prog2 eInicial
 
 {- Este programa debe comportarse como Skip -}
 
 -- Ejemplo 3
+prog3 :: Expr Omega
 prog3 =
   Catch
     (Local "x" (Const 7) Fail)
     Skip
 
+ejemplo3 :: IO ()
 ejemplo3 = eval ["x"] prog3 eIniTest
 
 {- División y Resto -}
 
 -- Ejemplo 4
+progDivMod :: Expr Omega
 progDivMod =
   If
     (Or
@@ -225,19 +232,28 @@ progDivMod =
     Si "x" < 0 o "y" <= 0, aborta dejando los valores iniciales de "x" e "y".
 -}
 
+ejemploDivMod :: Int -> Int -> IO ()
 ejemploDivMod a b = eval ["x", "y"] progDivMod $
   update (update eInicial "x" a) "y" b
 
--- My own testing
+-- Fin de funciones del enunciado
 
+
+-- Implementaciones de test propias
+--
+--
+--
 -- Assignations
+program1 :: Expr Omega
 program1 = Seq
             (Assign "x" (Const 10))
             (Assign "y" (Const 20))
 
+test1 :: IO ()
 test1 = eval ["x", "y", "c"] program1 (eIniTest)
 
 -- Conditional
+program2 :: Expr Omega
 program2 = Seq
           (Assign "c" (Const 3 ))
           ( If ( Eq (Var "x") (Var "y"))
@@ -245,11 +261,12 @@ program2 = Seq
               ( Assign "c" (Const 2) )
           )
 
+test2 :: Int -> Int -> Int -> IO ()
 test2 a b c = eval ["x", "y", "c"] program2 $
               (update (update (update eIniTest "x" a) "y" b) "c" c)
 
 -- While
-
+program3 :: Expr Omega
 program3 = While
             ( Less (Var "x") (Const 10) )
             ( Assign "x"
@@ -257,36 +274,42 @@ program3 = While
             )
 
 
+test3 :: Int -> IO ()
 test3 a = eval ["x"] program3 $
       (update eIniTest "x" a)
 
 -- Newvar
-
+program4 :: Expr Omega
 program4 = Local "x" (Const 3) Skip
 
+test4 :: IO ()
 test4 = eval ["x"] program4 eIniTest
 
 -- Catch
--- x should be 36
-
+-- x deberia ser 36
+program5a :: Expr Omega
 program5a = Seq (Catch Fail Skip) (Assign "x" (Const 36))
 
+test5a :: IO ()
 test5a = eval ["x"] program5a eIniTest
 
--- x should be 36 because it always assign
+-- x deberia ser 36 porque Asign asigna siempre aunque falle
+program5b :: Expr Omega
 program5b = Seq (Catch Skip Fail) (Assign "x" (Const 36))
 
+test5b :: IO ()
 test5b = eval ["x"] program5b eIniTest
 
 -- Div by 0
-
+program6 :: Expr Int
 program6 = Div (Const 3) (Const 0)
 
 
+test6 :: IO ()
 test6 = eval ["x"] program6 eIniTest
 
 -- Nuevo While. Esta bien que no cambie el valor dentro del while?
-
+program7 :: Expr Omega
 program7 = Seq
               (Seq
                 (Assign "x" (Const 3))
@@ -300,29 +323,47 @@ program7 = Seq
               )
 
 
+test7 :: IO ()
 test7 = eval ["x"] program7 eInicial
 
+
 -- Division
+test8 :: Int
 test8 = sem (Div (Const 11) (Const 5)) (eInicial)
 
 -- Plus
-
+test9 :: Int
 test9 = sem (Plus (Const 15) (Const 13)) eInicial
+
+test10 :: Int
 test10 = sem (Plus (Const 15) (Const (-18))) eInicial
 
+
 -- Dif
+test11 :: Int
 test11 = sem (Dif (Const 15) (Const (-18))) eInicial
 
 -- Times
+test12 :: Int
 test12 = sem (Times (Const 15) (Const (3))) eInicial
 
 -- Bools
 -- equal
+
+my_true :: Expr Bool
 my_true = Eq (Const 1) (Const 1)
+
+my_false :: Expr Bool
 my_false = Not(my_true)
 
+test13 :: Bool
 test13 = sem (And (my_true) (my_true)) eInicial
+
+test14 :: Bool
 test14 = sem (Or (my_true) (my_true)) eInicial
 
+test15 :: Bool
 test15 = sem (And (my_false) (my_true)) eInicial
+
+test16 :: Bool
 test16 = sem (Or (my_false) (my_true)) eInicial
