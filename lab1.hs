@@ -25,7 +25,7 @@ update σ v n v' =
 
 eInicial, eIniTest :: Σ
 eInicial _ = undefined
-eIniTest _ =  0
+eIniTest _ = 0
 
 {- Ω ≈ Σ + Σ -}
 data Ω
