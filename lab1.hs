@@ -137,7 +137,7 @@ instance DomSem Ω where
   sem (While b c) s = fix f s
                           where
                             f w s' | sem b s' = (*.) w (sem c s')
-                                   | otherwise = Normal s
+                                   | otherwise = Normal s'
 
   sem (If b c1 c2) s | sem b s = sem c1 s
                      | otherwise = sem c2 s
