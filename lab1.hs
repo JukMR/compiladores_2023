@@ -133,7 +133,7 @@ instance DomSem Ω where
   sem Skip s = Normal s
   sem Fail s = Abort s
   sem (Assign v e) s  = Normal (update s v (sem e s))
-  sem (Local v e c) s = (++.) (\s' -> update s' v (s v)) ((sem c) (update s v (sem e s)))
+  sem (Local v e c) s = (++.) (\s' -> update s' v (s v)) (sem c (update s v (sem e s)))
   sem (While b c) s = fix f s
                           where
                             f w s' | sem b s' = (*.) w (sem c s')
@@ -160,7 +160,7 @@ instance Eval Ω where
     where
       elsigma (Normal σ) = σ
       elsigma (Abort σ)  = σ
-      f s var = putStrLn (var ++ " vale " ++ (show (s var)))
+      f s var = putStrLn (var ++ " vale " ++ show (s var))
 
 -- Ejemplo 1
 {- Usen esto con eInicial o eIniTest pasando una lista de variables -}
@@ -252,7 +252,7 @@ prog5 = Seq
             (Assign "y" (Const 20))
 
 test5 :: IO ()
-test5 = eval ["x", "y", "c"] prog1 (eIniTest)
+test5 = eval ["x", "y", "c"] prog1 eIniTest
 
 -- Ejemplo 6
 -- Conditional
@@ -266,7 +266,7 @@ prog6 = Seq
 
 test6 :: Int -> Int -> Int -> IO ()
 test6 a b c = eval ["x", "y", "c"] prog6 $
-              (update (update (update eIniTest "x" a) "y" b) "c" c)
+              update (update (update eIniTest "x" a) "y" b) "c" c
 
 -- Ejemplo 7
 -- While
@@ -280,7 +280,7 @@ prog7 = While
 
 test7 :: Int -> IO ()
 test7 a = eval ["x"] prog7 $
-      (update eIniTest "x" a)
+      update eIniTest "x" a
 
 -- Ejemplo 8
 -- Newvar
@@ -339,7 +339,7 @@ test12 = eval ["x"] prog12 eInicial
 -- Ejemplo 13
 -- Division
 test13 :: Int
-test13 = sem (Div (Const 11) (Const 5)) (eInicial)
+test13 = sem (Div (Const 11) (Const 5)) eInicial
 
 -- Ejemplo 14
 -- Plus
