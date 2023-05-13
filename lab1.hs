@@ -145,7 +145,7 @@ instance DomSem Ω where
   sem (Catch c0 c1) s = (+.) (sem c1) (sem c0 s)
   sem (Seq c0 c1) s = (*.) (sem c1) (sem c0 s)
 
-{- ################# Funciones de evaluación de dom ################# -}
+-- ################# Funciones de evaluación de dom ################# --
 class Eval dom where
   eval :: [Iden] -> Expr dom -> Σ -> IO ()
 
