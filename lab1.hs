@@ -358,66 +358,66 @@ test16 = sem (Dif (Const 15) (Const (-18))) eInicial
 -- Ejemplo 17
 -- Times
 test17 :: Int
-test17 = sem (Times (Const 15) (Const (3))) eInicial
+test17 = sem (Times (Const 15) (Const 3)) eInicial
 
 -- Bools
 -- equal
 
-my_true :: Expr Bool
-my_true = Eq (Const 1) (Const 1)
+myTrue :: Expr Bool
+myTrue = Eq (Const 1) (Const 1)
 
-my_false :: Expr Bool
-my_false = Not(my_true)
+myFalse :: Expr Bool
+myFalse = Not myTrue
 
 -- Ejemplo 18
 test18 :: Bool
-test18 = sem (And (my_true) (my_true)) eInicial
+test18 = sem (And myTrue myTrue) eInicial
 
 -- Ejemplo 19
 test19 :: Bool
-test19 = sem (Or (my_true) (my_true)) eInicial
+test19 = sem (Or myTrue myTrue) eInicial
 
 -- Ejemplo 20
 test20 :: Bool
-test20 = sem (Not(And (my_false) (my_true))) eInicial
+test20 = sem (Not(And myFalse myTrue)) eInicial
 
 -- Ejemplo 21
 test21 :: Bool
-test21 = sem (Or (my_false) (my_true)) eInicial
+test21 = sem (Or myFalse myTrue) eInicial
 
 
 -- =====================================
 -- Chequeo de tests
 -- =====================================
 
-get_sigma_from_omega :: Ω -> Σ
-get_sigma_from_omega (Normal s) = s
-get_sigma_from_omega (Abort s) = s
+getSigmaFromOmega :: Ω -> Σ
+getSigmaFromOmega (Normal s) = s
+getSigmaFromOmega (Abort s) = s
 
-bool_tests :: Bool
-bool_tests = and [test18, test19, test20, test21]
+boolTests :: Bool
+boolTests = and [test18, test19, test20, test21]
 
-assert_prog1 :: Bool
-assert_prog1 = get_sigma_from_omega (sem prog1 eInicial) "x" == 8
+assertProg1 :: Bool
+assertProg1 = getSigmaFromOmega (sem prog1 eInicial) "x" == 8
 
-assert_prog2_x :: Bool
-assert_prog2_x = get_sigma_from_omega (sem prog2 eInicial) "x" == 4
+assertProg2x :: Bool
+assertProg2x = getSigmaFromOmega (sem prog2 eInicial) "x" == 4
 
-assert_prog2_y :: Bool
-assert_prog2_y = get_sigma_from_omega (sem prog2 eInicial) "y" == 5
+assertProg2y :: Bool
+assertProg2y = getSigmaFromOmega (sem prog2 eInicial) "y" == 5
 
-assert_prog2 :: Bool
-assert_prog2 = assert_prog2_x && assert_prog2_y
+assertProg2 :: Bool
+assertProg2 = assertProg2x && assertProg2y
 
-assert_prog3 :: Bool
-assert_prog3 = get_sigma_from_omega (sem prog3 eIniTest) "x" == 0
+assertProg3 :: Bool
+assertProg3 = getSigmaFromOmega (sem prog3 eIniTest) "x" == 0
 
-assert_ejemplo_div_mod_x :: Bool
-assert_ejemplo_div_mod_x = get_sigma_from_omega (sem progDivMod (update (update eInicial "x" 13) "y" 2) ) "x" == 6
+assertEjemploDivModCheckx :: Bool
+assertEjemploDivModCheckx = getSigmaFromOmega (sem progDivMod (update (update eInicial "x" 13) "y" 2) ) "x" == 6
 
-assert_ejemplo_div_mod_y :: Bool
-assert_ejemplo_div_mod_y = get_sigma_from_omega (sem progDivMod (update (update eInicial "x" 13) "y" 2) ) "y" == 1
+assertEjemploDivModChecky :: Bool
+assertEjemploDivModChecky = getSigmaFromOmega (sem progDivMod (update (update eInicial "x" 13) "y" 2) ) "y" == 1
 
 
-assert_ejemplo_div_mod :: Bool
-assert_ejemplo_div_mod = assert_ejemplo_div_mod_x && assert_ejemplo_div_mod_y
+assertEjemploDivMod :: Bool
+assertEjemploDivMod = assertEjemploDivModCheckx && assertEjemploDivModChecky
