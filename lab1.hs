@@ -164,7 +164,7 @@ instance Eval Ω where
 
 -- Ejemplo 1
 {- Usen esto con eInicial o eIniTest pasando una lista de variables -}
-prog1 :: Expr Omega
+prog1 :: Expr Ω
 prog1 = Assign "x" (Const 8)
 
 ejemplo1 :: IO ()
@@ -173,7 +173,7 @@ ejemplo1 = eval ["x"] prog1 eIniTest
 {- Debe devolver 4 en "x" y 5 en "y" -}
 
 -- Ejemplo 2
-prog2 :: Expr Omega
+prog2 :: Expr Ω
 prog2 = Seq
           (Seq
             (Assign "x" (Const 3))
@@ -189,7 +189,7 @@ ejemplo2 = eval ["x", "y"] prog2 eInicial
 {- Este programa debe comportarse como Skip -}
 
 -- Ejemplo 3
-prog3 :: Expr Omega
+prog3 :: Expr Ω
 prog3 =
   Catch
     (Local "x" (Const 7) Fail)
@@ -201,7 +201,7 @@ ejemplo3 = eval ["x"] prog3 eIniTest
 {- División y Resto -}
 
 -- Ejemplo 4
-progDivMod :: Expr Omega
+progDivMod :: Expr Ω
 progDivMod =
   If
     (Or
@@ -244,7 +244,7 @@ ejemploDivMod a b = eval ["x", "y"] progDivMod $
 --
 --
 -- Assignations
-program1 :: Expr Omega
+program1 :: Expr Ω
 program1 = Seq
             (Assign "x" (Const 10))
             (Assign "y" (Const 20))
@@ -253,7 +253,7 @@ test1 :: IO ()
 test1 = eval ["x", "y", "c"] program1 (eIniTest)
 
 -- Conditional
-program2 :: Expr Omega
+program2 :: Expr Ω
 program2 = Seq
           (Assign "c" (Const 3 ))
           ( If ( Eq (Var "x") (Var "y"))
@@ -266,7 +266,7 @@ test2 a b c = eval ["x", "y", "c"] program2 $
               (update (update (update eIniTest "x" a) "y" b) "c" c)
 
 -- While
-program3 :: Expr Omega
+program3 :: Expr Ω
 program3 = While
             ( Less (Var "x") (Const 10) )
             ( Assign "x"
@@ -279,7 +279,7 @@ test3 a = eval ["x"] program3 $
       (update eIniTest "x" a)
 
 -- Newvar
-program4 :: Expr Omega
+program4 :: Expr Ω
 program4 = Local "x" (Const 3) Skip
 
 test4 :: IO ()
@@ -287,14 +287,14 @@ test4 = eval ["x"] program4 eIniTest
 
 -- Catch
 -- x deberia ser 36
-program5a :: Expr Omega
+program5a :: Expr Ω
 program5a = Seq (Catch Fail Skip) (Assign "x" (Const 36))
 
 test5a :: IO ()
 test5a = eval ["x"] program5a eIniTest
 
 -- x deberia ser 36 porque Asign asigna siempre aunque falle
-program5b :: Expr Omega
+program5b :: Expr Ω
 program5b = Seq (Catch Skip Fail) (Assign "x" (Const 36))
 
 test5b :: IO ()
@@ -309,7 +309,7 @@ test6 :: IO ()
 test6 = eval ["x"] program6 eIniTest
 
 -- Nuevo While. Esta bien que no cambie el valor dentro del while?
-program7 :: Expr Omega
+program7 :: Expr Ω
 program7 = Seq
               (Seq
                 (Assign "x" (Const 3))
