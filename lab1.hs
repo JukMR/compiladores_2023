@@ -1,3 +1,24 @@
+-- Lab 1 - Lenguajes y compiladores 2023
+-- Alumno: Julian Merida Renny
+
+-- Contenidos de este archivo:
+--
+--
+-- Codigo del enunciado / ecuaciones semanticas completas
+-- Ejemplos / tests manuales
+-- Chequeo automático de tests (resultados guardados en una variable booleana)
+
+
+-- Test:
+-- Se implementaron test adicionales a los provistos en el enunciado.
+
+-- Primero se implementó versiones para probar a mano y despues se implementaron variables en
+-- donde se corren estos test con valores pre cargados y se comprueba que los resultados sean los
+-- esperados.
+
+-- El resultado de todos los test se guarda en la variable `ok`. En esta variable se guarda el estado
+-- `and` de todos los tests. Es decir, si ok == True entonces todos los tests pasaron correctamente.
+
 {-# LANGUAGE GADTs #-}
 
 --         ∞
@@ -124,7 +145,7 @@ instance DomSem Bool where
 (+.) _ (Normal σ) = Normal σ
 (+.) f (Abort σ)  = f σ
 
--- dagger
+-- Funcion control daga
 (++.) :: (Σ -> Σ) -> Ω -> Ω
 (++.) f (Normal σ) = Normal (f σ)
 (++.) f (Abort σ)  = Abort (f σ)
@@ -168,11 +189,10 @@ instance Eval Ω where
 prog1 :: Expr Ω
 prog1 = Assign "x" (Const 8)
 
--- Debe devolver 8
 ejemplo1 :: IO ()
 ejemplo1 = eval ["x"] prog1 eIniTest
 
-{- Debe devolver 4 en "x" y 5 en "y" -}
+-- Debe devolver 8
 
 -- Ejemplo 2
 prog2 :: Expr Ω
@@ -188,7 +208,7 @@ prog2 = Seq
 ejemplo2 :: IO ()
 ejemplo2 = eval ["x", "y"] prog2 eInicial
 
-{- Este programa debe comportarse como Skip -}
+{- Debe devolver 4 en "x" y 5 en "y" -}
 
 -- Ejemplo 3
 prog3 :: Expr Ω
@@ -199,6 +219,7 @@ prog3 =
 
 ejemplo3 :: IO ()
 ejemplo3 = eval ["x"] prog3 eIniTest
+{- Este programa debe comportarse como Skip -}
 
 {- División y Resto -}
 
@@ -238,12 +259,14 @@ ejemploDivMod :: Int -> Int -> IO ()
 ejemploDivMod a b = eval ["x", "y"] progDivMod $
   update (update eInicial "x" a) "y" b
 
+-- ===============================================================================
 -- Fin de funciones del enunciado
+-- ===============================================================================
 
-
+-- ===============================================================================
 -- Implementaciones de test propias
---
---
+-- ===============================================================================
+
 -- Ejemplo 5
 -- Assignations
 prog5 :: Expr Ω
@@ -293,31 +316,31 @@ test8 = eval ["x"] prog8 eIniTest
 -- Ejemplo 9
 -- Catch
 -- x deberia ser 36
-prog9a :: Expr Ω
-prog9a = Seq (Catch Fail Skip) (Assign "x" (Const 36))
+prog9 :: Expr Ω
+prog9 = Seq (Catch Fail Skip) (Assign "x" (Const 36))
 
-test9a :: IO ()
-test9a = eval ["x"] prog9a eIniTest
+test9 :: IO ()
+test9 = eval ["x"] prog9 eIniTest
 
 -- Ejemplo 10
 -- x deberia ser 36 porque Asign asigna siempre aunque falle
-prog10b :: Expr Ω
-prog10b = Seq (Catch Skip Fail) (Assign "x" (Const 36))
+prog10 :: Expr Ω
+prog10 = Seq (Catch Skip Fail) (Assign "x" (Const 36))
 
-test10b :: IO ()
-test10b = eval ["x"] prog10b eIniTest
+test10 :: IO ()
+test10 = eval ["x"] prog10 eIniTest
 
 -- Ejemplo 11
 -- Div by 0
-prog11 :: Expr Int
-prog11 = Div (Const 3) (Const 0)
+prog11 :: Expr Ω
+prog11 = Assign "x" (Div (Const 3) (Const 0))
 
 
 test11 :: IO ()
 test11 = eval ["x"] prog11 eIniTest
 
 -- Ejemplo 12
--- Nuevo While. Esta bien que no cambie el valor dentro del while?
+-- Nuevo While
 prog12 :: Expr Ω
 prog12 = Seq
               (Seq
@@ -335,6 +358,7 @@ prog12 = Seq
 test12 :: IO ()
 test12 = eval ["x"] prog12 eInicial
 
+-- Tests expresiones enteras
 
 -- Ejemplo 13
 -- Division
@@ -360,8 +384,7 @@ test16 = sem (Dif (Const 15) (Const (-18))) eInicial
 test17 :: Int
 test17 = sem (Times (Const 15) (Const 3)) eInicial
 
--- Bools
--- equal
+-- Tests expresiones booleanas
 
 myTrue :: Expr Bool
 myTrue = Eq (Const 1) (Const 1)
@@ -386,19 +409,22 @@ test21 :: Bool
 test21 = sem (Or myFalse myTrue) eInicial
 
 
--- =====================================
--- Chequeo de tests
--- =====================================
+-- ===============================================================================
+-- Chequeo de tests automaticos
+-- ===============================================================================
 
+
+-- Funcion auxiliar
 getSigmaFromOmega :: Ω -> Σ
 getSigmaFromOmega (Normal s) = s
 getSigmaFromOmega (Abort s) = s
 
-boolTests :: Bool
-boolTests = and [test18, test19, test20, test21]
+-- Ejemplo 1
 
 assertProg1 :: Bool
 assertProg1 = getSigmaFromOmega (sem prog1 eInicial) "x" == 8
+
+-- Ejemplo 2
 
 assertProg2x :: Bool
 assertProg2x = getSigmaFromOmega (sem prog2 eInicial) "x" == 4
@@ -407,10 +433,18 @@ assertProg2y :: Bool
 assertProg2y = getSigmaFromOmega (sem prog2 eInicial) "y" == 5
 
 assertProg2 :: Bool
-assertProg2 = assertProg2x && assertProg2y
+assertProg2 = and [assertProg2x,  assertProg2y]
+
+-- Ejemplo 3
+
+assertProg3x :: Bool
+assertProg3x = getSigmaFromOmega (sem prog3 eIniTest) "x" == 0
 
 assertProg3 :: Bool
-assertProg3 = getSigmaFromOmega (sem prog3 eIniTest) "x" == 0
+assertProg3 = and [assertProg3x]
+
+
+-- Ejemplo 4
 
 assertEjemploDivModCheckx :: Bool
 assertEjemploDivModCheckx = getSigmaFromOmega (sem progDivMod (update (update eInicial "x" 13) "y" 2) ) "x" == 6
@@ -418,6 +452,151 @@ assertEjemploDivModCheckx = getSigmaFromOmega (sem progDivMod (update (update eI
 assertEjemploDivModChecky :: Bool
 assertEjemploDivModChecky = getSigmaFromOmega (sem progDivMod (update (update eInicial "x" 13) "y" 2) ) "y" == 1
 
+assertProg4 :: Bool
+assertProg4 = and [assertEjemploDivModCheckx, assertEjemploDivModChecky]
 
-assertEjemploDivMod :: Bool
-assertEjemploDivMod = assertEjemploDivModCheckx && assertEjemploDivModChecky
+-- Ejemplo 5
+
+assertProg5a :: Bool
+assertProg5a = getSigmaFromOmega (sem prog5 eIniTest) "x" == 10
+
+assertProg5b :: Bool
+assertProg5b = getSigmaFromOmega (sem prog5 eIniTest) "y" == 20
+
+assertProg5 :: Bool
+assertProg5 = and [assertProg5a, assertProg5b]
+
+-- Ejemplo 6
+
+assertProg6Status :: Σ
+assertProg6Status = update (update (update eIniTest "x" 25) "y" 25) "c" 10
+
+assertProg6_1_a :: Bool
+assertProg6_1_b :: Bool
+assertProg6_1_c :: Bool
+
+assertProg6_1_a = getSigmaFromOmega (sem prog6 assertProg6Status) "x" == 25
+assertProg6_1_b = getSigmaFromOmega (sem prog6 assertProg6Status) "y" == 25
+assertProg6_1_c = getSigmaFromOmega (sem prog6 assertProg6Status) "c" == 1
+
+assertProg6Status2 :: Σ
+assertProg6Status2 = update (update (update eIniTest "x" 13) "y" 25) "c" 10
+
+assertProg6_2_a :: Bool
+assertProg6_2_b :: Bool
+assertProg6_2_c :: Bool
+
+assertProg6_2_a = getSigmaFromOmega (sem prog6 assertProg6Status2) "x" == 13
+assertProg6_2_b = getSigmaFromOmega (sem prog6 assertProg6Status2) "y" == 25
+assertProg6_2_c = getSigmaFromOmega (sem prog6 assertProg6Status2) "c" == 2
+
+assertProg6 :: Bool
+assertProg6 = and [assertProg6_1_a, assertProg6_1_b, assertProg6_1_c, assertProg6_2_a, assertProg6_2_b, assertProg6_2_c]
+
+-- Ejemplo 7
+
+assertProg7a :: Bool
+assertProg7a = getSigmaFromOmega (sem prog7 (update eIniTest "x" (-133))) "x" == 10
+
+assertProg7b :: Bool
+assertProg7b = getSigmaFromOmega (sem prog7 (update eIniTest "x" 133)) "x" == 133
+
+
+assertProg7 :: Bool
+assertProg7 = and [assertProg7a, assertProg7b]
+
+-- Ejemplo 8
+
+assertProg8a :: Bool
+assertProg8a = getSigmaFromOmega (sem prog8 (update eIniTest "x" 10)) "x" == 10
+
+assertProg8b :: Bool
+assertProg8b = getSigmaFromOmega (sem prog8 eIniTest) "x" == 0
+
+
+assertProg8 :: Bool
+assertProg8 = and [assertProg8a, assertProg8b]
+
+-- Ejemplo 9
+
+assertProg9a :: Bool
+assertProg9a = getSigmaFromOmega (sem prog9 (update eIniTest "x" 10)) "x" == 36
+
+assertProg9b :: Bool
+assertProg9b = getSigmaFromOmega (sem prog9 eIniTest) "x" == 36
+
+
+assertProg9 :: Bool
+assertProg9 = and [assertProg9a, assertProg9b]
+
+-- Ejemplo 10
+
+assertProg10a :: Bool
+assertProg10a = getSigmaFromOmega (sem prog10 (update eIniTest "x" 10)) "x" == 36
+
+assertProg10b :: Bool
+assertProg10b = getSigmaFromOmega (sem prog10 eIniTest) "x" == 36
+
+
+assertProg10 :: Bool
+assertProg10 = and [assertProg10a, assertProg10b]
+
+-- Ejemplo 11
+
+assertProg11a :: Bool
+assertProg11a = getSigmaFromOmega (sem prog11 (update eIniTest "x" 11)) "x" == 0
+
+assertProg11 :: Bool
+assertProg11 = and [assertProg11a]
+
+-- Ejemplo 12
+
+assertProg12a :: Bool
+assertProg12a = getSigmaFromOmega (sem prog12 (update eIniTest "x" 1234)) "x" == 11
+
+assertProg12 :: Bool
+assertProg12 = and [assertProg12a]
+
+-- Ejemplo 13
+
+assertProg13 :: Bool
+assertProg13 = test13 == 2
+
+-- Ejemplo 14
+
+assertProg14 :: Bool
+assertProg14 = test14 == 28
+
+-- Ejemplo 15
+
+assertProg15 :: Bool
+assertProg15 = test15 == (-3)
+
+-- Ejemplo 16
+
+assertProg16 :: Bool
+assertProg16 = test16 == (33)
+
+-- Ejemplo 17
+
+assertProg17 :: Bool
+assertProg17 = test17 == (45)
+
+
+-- All asserts
+allAserts :: Bool
+allAserts = and [assertProg1, assertProg2, assertProg3,
+                assertProg4, assertProg5, assertProg6,
+                assertProg7, assertProg8, assertProg9,
+                assertProg10, assertProg11, assertProg12,
+                assertProg13, assertProg14, assertProg15,
+                assertProg16, assertProg17]
+
+
+-- All bools asserts
+allBools :: Bool
+allBools = and [test18, test19, test20, test21]
+
+-- Final program assert
+ok :: Bool
+ok = allAserts && allBools
