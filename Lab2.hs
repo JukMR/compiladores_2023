@@ -31,22 +31,42 @@ data Expr a where
   Var    :: String    -> Expr Int                      -- v
   Plus   :: Expr Int  -> Expr Int -> Expr Int          -- e + e'
   -- e - e'
+  Dif   :: Expr Int -> Expr Int -> Expr Int
   -- e * e'
-  -- e / e'
+  Times :: Expr Int -> Expr Int -> Expr Int
+  -- e / e' (división entera)
+  Div   :: Expr Int -> Expr Int -> Expr Int
+  -- Si e' evalúa a 0, hagan lo que quieran --> devuelve 0.
+
   -- Expresiones booleanas
   Eq     :: Expr Int  -> Expr Int -> Expr Bool         -- e = e'
   -- e /= e'
+  Neq  :: Expr Int  -> Expr Int -> Expr Bool
   -- e < e'
-  -- e <= e'
+  Less :: Expr Int  -> Expr Int -> Expr Bool
+  -- b && b'
+  And  :: Expr Bool -> Expr Bool -> Expr Bool
+  -- b || b'
+  Or   :: Expr Bool -> Expr Bool -> Expr Bool
+  -- ¬b
+  Not  :: Expr Bool              -> Expr Bool
+
   -- Comandos
   Skip   :: Expr Ω                                     -- skip
-  -- newvar v := e in e'
+  -- NEWVAR v := e IN c
+  Newvar  :: Iden      -> Expr Int -> Expr Ω -> Expr Ω
   -- v := e
-  -- fail
-  -- catch c with c'
-  -- while b do c
-  -- if b then c else c'
+  Assign :: Iden      -> Expr Int           -> Expr Ω
+  -- FAIL
+  Fail   ::                                    Expr Ω
+  -- CATCHIN c WITH c'
+  Catch  :: Expr Ω    -> Expr Ω             -> Expr Ω
+  -- WHILE b DO c
+  While  :: Expr Bool -> Expr Ω             -> Expr Ω
+  -- IF b THEN c ELSE c'
+  If     :: Expr Bool -> Expr Ω   -> Expr Ω -> Expr Ω
   -- c ; c'
+  Seq    :: Expr Ω    -> Expr Ω             -> Expr Ω
   -- !e
   -- ?v
 
@@ -57,9 +77,19 @@ instance DomSem Int where
   sem (Const a)    _ = a
   sem (Var v)      σ = σ v
   sem (Plus e1 e2) σ = sem e1 σ + sem e2 σ
+  sem (Dif e1 e2) σ = sem e1 σ - sem e2 σ
+  sem (Times e1 e2) σ = sem e1 σ * sem e2 σ
+  sem (Div e1 e2) σ | sem e2 σ  /= 0 = div (sem e1 σ) (sem e2 σ)
+                    | otherwise = 0
 
 instance DomSem Bool where
   sem (Eq e1 e2) σ = sem e1 σ == sem e2 σ
+  sem (Neq e1 e2) σ = sem e1 σ /= sem e2 σ
+  sem (Less e1 e2) σ = sem e1 σ < sem e2 σ
+  sem (And e1 e2) σ = sem e1 σ && sem e2 σ
+  sem (Or e1 e2) σ = sem e1 σ || sem e2 σ
+  sem (Not e1) σ = not (sem e1 σ)
+
 
 (*.) :: (Σ -> Ω) -> Ω -> Ω
 (*.) f (Normal σ)  = f σ
@@ -81,6 +111,19 @@ instance DomSem Bool where
 
 instance DomSem Ω where
   sem Skip σ = Normal σ
+  sem Fail s = Abort s
+  sem (Assign v e) s  = Normal (update s v (sem e s))
+  sem (Newvar v e c) s = (†.) (\s' -> update s' v (s v)) (sem c (update s v (sem e s)))
+  sem (While b c) s = fix f s
+                          where
+                            f w s' | sem b s' = (*.) w (sem c s')
+                                   | otherwise = Normal s'
+
+  sem (If b c1 c2) s | sem b s = sem c1 s
+                     | otherwise = sem c2 s
+
+  sem (Catch c0 c1) s = (+.) (sem c1) (sem c0 s)
+  sem (Seq c0 c1) s = (*.) (sem c1) (sem c0 s)
 
 {- ################# Funciones de evaluación de dom ################# -}
 
