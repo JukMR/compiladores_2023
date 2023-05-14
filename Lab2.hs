@@ -10,11 +10,11 @@ type Iden = String
 type Σ = Iden -> Int
 
 update :: Σ -> Iden -> Int -> Σ
-update σ v n v' = if v == v' then n else σ v'ç
+update σ v n v' = if v == v' then n else σ v'
 
 eInicial, eIniTest :: Σ
-eInicial = \v -> undefined
-eIniTest = \v -> 0
+eInicial _ = undefined
+eIniTest _ = 0
 
 {- Ω ≈ (Σ' + Z × Ω + Z → Ω)⊥ -}
 data Ω = Normal Σ | Abort Σ | Out (Int, Ω) | In (Int -> Ω)
@@ -49,8 +49,8 @@ data Expr a where
   -- c ; c'
   -- !e
   -- ?v
-    
-class DomSem dom where 
+
+class DomSem dom where
   sem :: Expr dom -> Σ -> dom
 
 instance DomSem Int where
@@ -84,7 +84,7 @@ instance DomSem Ω where
 
 {- ################# Funciones de evaluación de dom ################# -}
 
-class Eval dom where 
+class Eval dom where
   eval :: Expr dom -> Σ -> IO ()
 
 instance Eval Int where
