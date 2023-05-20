@@ -180,3 +180,69 @@ prog2 = Seq
 
 test2 :: IO ()
 test2 = eval prog2 eIniTest
+
+-- Ejemplo 3
+-- Input y While
+
+prog3 :: Expr Ω
+prog3 =
+        Seq
+          (Seq
+            (Input "x")
+            (While (Less (Var "x") (Const 10))
+                    (Assign "x" (Plus (Const 1) (Var "x")))
+            )
+          )
+          (Output (Var "x"))
+
+test3 :: IO ()
+test3 = eval prog3 eIniTest
+
+-- Ejemplo 4
+-- progDivMod with input and output
+
+prog4 :: Expr Ω
+prog4 =
+  Seq
+  (Seq (Input "x" )
+       (Input  "y")
+  )
+  (
+    Seq
+      (If
+        (Or
+          (Or (Less (Var "y") (Const 0)) (Eq (Var "y") (Const 0)))
+          (Less (Var "x") (Const 0))
+        )
+        Fail
+        (Newvar "q" (Const 0)
+          (Newvar "r" (Var "x")
+            (Seq
+              (Seq
+                (While
+                  (Not (Less (Var "r") (Var "y")))
+                  (Seq
+                    (Assign "q" (Plus (Var "q") (Const 1)))
+                    (Assign "r" (Dif (Var "r") (Var "y")))
+                  )
+                )
+                (Assign "x" (Var "q"))
+              )
+              (Assign "y" (Var "r"))
+            )
+          )
+        )
+      )
+      (Seq
+        (Output (Var "x"))
+        (Output (Var "y"))
+        ))
+
+{- Ejecuta el programa de división entera a/b con a en "x" y b en "y". Devuelve
+	el cociente en "x" y el resto en "y".
+    Si "x" < 0 o "y" <= 0, aborta dejando los valores iniciales de "x" e "y".
+-}
+
+
+test4 :: IO ()
+test4 = eval prog4 eIniTest
