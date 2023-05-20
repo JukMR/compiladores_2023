@@ -1,3 +1,6 @@
+-- Lab 2 - Lenguajes y compiladores 2023
+-- Alumno: Julian Merida Renny
+
 {-# LANGUAGE GADTs #-}
 
 --         ∞
@@ -246,3 +249,26 @@ prog4 =
 
 test4 :: IO ()
 test4 = eval prog4 eIniTest
+
+
+-- Ejemplo 5
+-- Newvar with output
+
+prog5 :: Expr Ω
+prog5 = Seq
+          (Input "x")
+          (Seq
+            (Newvar "x" (Const 13)
+            (Seq
+              (Output (Var "x"))
+              (Seq
+                (Assign "x" (Plus (Const 1) (Var "x")))
+                (Output (Var "x"))
+              )
+            )
+            )
+            (Output (Var "x"))
+          )
+
+test5 :: IO ()
+test5 = eval prog5 eIniTest
