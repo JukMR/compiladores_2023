@@ -27,9 +27,12 @@ data Ω = Normal Σ | Abort Σ | Out (Int, Ω) | In (Int -> Ω)
 
 data Expr a where
   -- Expresiones enteras
-  Const  :: Int       -> Expr Int                      -- n
-  Var    :: String    -> Expr Int                      -- v
-  Plus   :: Expr Int  -> Expr Int -> Expr Int          -- e + e'
+  -- n
+  Const  :: Int       -> Expr Int
+  -- v
+  Var    :: String    -> Expr Int
+   -- e + e'
+  Plus   :: Expr Int  -> Expr Int -> Expr Int
   -- e - e'
   Dif   :: Expr Int -> Expr Int -> Expr Int
   -- e * e'
@@ -39,7 +42,8 @@ data Expr a where
   -- Si e' evalúa a 0, hagan lo que quieran --> devuelve 0.
 
   -- Expresiones booleanas
-  Eq     :: Expr Int  -> Expr Int -> Expr Bool         -- e = e'
+  -- e = e'
+  Eq     :: Expr Int  -> Expr Int -> Expr Bool
   -- e /= e'
   Neq  :: Expr Int  -> Expr Int -> Expr Bool
   -- e < e'
@@ -52,7 +56,8 @@ data Expr a where
   Not  :: Expr Bool              -> Expr Bool
 
   -- Comandos
-  Skip   :: Expr Ω                                     -- skip
+  -- skip
+  Skip   :: Expr Ω
   -- NEWVAR v := e IN c
   Newvar  :: Iden      -> Expr Int -> Expr Ω -> Expr Ω
   -- v := e
@@ -68,7 +73,9 @@ data Expr a where
   -- c ; c'
   Seq    :: Expr Ω    -> Expr Ω             -> Expr Ω
   -- !e
+  Output    :: Expr Int                      -> Expr Ω
   -- ?v
+  Input    :: Iden                            -> Expr Ω
 
 class DomSem dom where
   sem :: Expr dom -> Σ -> dom
@@ -89,7 +96,6 @@ instance DomSem Bool where
   sem (And e1 e2) σ = sem e1 σ && sem e2 σ
   sem (Or e1 e2) σ = sem e1 σ || sem e2 σ
   sem (Not e1) σ = not (sem e1 σ)
-
 
 (*.) :: (Σ -> Ω) -> Ω -> Ω
 (*.) f (Normal σ)  = f σ
@@ -124,8 +130,11 @@ instance DomSem Ω where
 
   sem (Catch c0 c1) s = (+.) (sem c1) (sem c0 s)
   sem (Seq c0 c1) s = (*.) (sem c1) (sem c0 s)
+  sem (Input c0) s = In (\v -> Normal (update s c0 v ))
+  sem (Output c0) s = Out(sem c0 s, Normal s)
 
-{- ################# Funciones de evaluación de dom ################# -}
+
+-- ################# Funciones de evaluación de dom ################# --
 
 class Eval dom where
   eval :: Expr dom -> Σ -> IO ()
@@ -143,3 +152,31 @@ instance Eval Ω where
           unrollOmega (Abort σ)    = putStrLn "Abort"
           unrollOmega (Out (n, ω)) = print n >> unrollOmega ω
           unrollOmega (In f)       = getLine >>= unrollOmega . f . read
+
+
+
+-- ===============================================================================
+-- Implementaciones de test propias
+-- ===============================================================================
+
+-- Ejemplo 1
+-- Output
+
+prog1 :: Expr Ω
+prog1 = Seq
+          (Assign "x" (Const 10))
+          (Output (Var "x"))
+
+test1 :: IO ()
+test1 = eval prog1 eIniTest
+
+-- Ejemplo 2
+-- Input
+
+prog2 :: Expr Ω
+prog2 = Seq
+          (Input "x")
+          (Output (Var "x"))
+
+test2 :: IO ()
+test2 = eval prog2 eIniTest
