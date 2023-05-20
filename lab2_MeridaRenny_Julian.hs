@@ -134,7 +134,7 @@ instance DomSem Ω where
   sem (Catch c0 c1) s = (+.) (sem c1) (sem c0 s)
   sem (Seq c0 c1) s = (*.) (sem c1) (sem c0 s)
   sem (Input c0) s = In (\v -> Normal (update s c0 v ))
-  sem (Output c0) s = Out(sem c0 s, Normal s)
+  sem (Output c0) s = Out (sem c0 s, Normal s)
 
 
 -- ################# Funciones de evaluación de dom ################# --
@@ -151,8 +151,8 @@ instance Eval Bool where
 instance Eval Ω where
   eval e = unrollOmega . sem e
     where unrollOmega :: Ω -> IO ()
-          unrollOmega (Normal σ)   = return ()
-          unrollOmega (Abort σ)    = putStrLn "Abort"
+          unrollOmega (Normal _)   = return ()
+          unrollOmega (Abort _)    = putStrLn "Abort"
           unrollOmega (Out (n, ω)) = print n >> unrollOmega ω
           unrollOmega (In f)       = getLine >>= unrollOmega . f . read
 
@@ -280,9 +280,9 @@ fibo :: Expr Ω
 fibo = Seq (Input "n")
       $ Seq (Assign "x" (Const 0))
       $ Seq (Assign "z" (Const 1))
-      $ Seq (If (Less (Var "n") (Const 0)) (Fail) (Skip))
-      $ Seq (If (Eq (Var "n") (Const 0)) (Seq (Output (Var "x")) (Fail)) (Skip)) --corto programa con fail
-      $ Seq (If (Eq (Var "n") (Const 1)) (Seq (Output (Var "z")) (Fail)) (Skip))
+      $ Seq (If (Less (Var "n") (Const 0)) Fail Skip)
+      $ Seq (If (Eq (Var "n") (Const 0)) (Seq (Output (Var "x")) Fail) Skip) --corto programa con fail
+      $ Seq (If (Eq (Var "n") (Const 1)) (Seq (Output (Var "z")) Fail) Skip)
       $ Seq (Assign "i" (Const 2))
       $ Seq (While (Less (Var "i") (Plus (Var "n") (Const 1)))
                   ( Seq (Assign "y" (Plus (Var "x") (Var "z")))
