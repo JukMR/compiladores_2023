@@ -272,3 +272,26 @@ prog5 = Seq
 
 test5 :: IO ()
 test5 = eval prog5 eIniTest
+
+-- Ejemplo 6
+-- Fibonacci
+
+fibo :: Expr Ω
+fibo = Seq (Input "n")
+      $ Seq (Assign "x" (Const 0))
+      $ Seq (Assign "z" (Const 1))
+      $ Seq (If (Less (Var "n") (Const 0)) (Fail) (Skip))
+      $ Seq (If (Eq (Var "n") (Const 0)) (Seq (Output (Var "x")) (Fail)) (Skip)) --corto programa con fail
+      $ Seq (If (Eq (Var "n") (Const 1)) (Seq (Output (Var "z")) (Fail)) (Skip))
+      $ Seq (Assign "i" (Const 2))
+      $ Seq (While (Less (Var "i") (Plus (Var "n") (Const 1)))
+                  ( Seq (Assign "y" (Plus (Var "x") (Var "z")))
+                  $ Seq (Assign "x" (Var "z"))
+                  $ Seq (Assign "z" (Var "y"))
+                    (Assign "i" (Plus (Var "i") (Const 1)))
+                  ))
+      $ Seq (Output (Var "z"))
+      Skip
+
+test6 :: IO ()
+test6 = eval fibo eIniTest
