@@ -296,6 +296,9 @@ fibo = Seq (Input "n")
 test6 :: IO ()
 test6 = eval fibo eIniTest
 
+-- Ejemplo 7
+-- Print numeros desde el !x hasta el 31
+
 prog7 :: Expr Ω
 prog7 = Seq
           (Input "x")
@@ -309,3 +312,22 @@ prog7 = Seq
 
 test7 :: IO ()
 test7 = eval prog7 eIniTest
+
+-- Ejemplo 8
+-- Probar division por 0 con input y output
+
+prog8 :: Expr Ω
+prog8 = Seq (Input "x")
+            (Output (Div (Var "x") (Const 0)))
+
+test8 :: IO ()
+test8 = eval prog8 eIniTest
+
+-- Ejemplo 9
+-- While True print x
+
+prog9 :: Expr Ω
+prog9 = While (Eq (Const 1) (Const 1)) (Output (Var "x"))
+
+test9 :: IO ()
+test9 = eval prog9 (const 3)
