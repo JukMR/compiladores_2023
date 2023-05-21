@@ -295,3 +295,17 @@ fibo = Seq (Input "n")
 
 test6 :: IO ()
 test6 = eval fibo eIniTest
+
+prog7 :: Expr Ω
+prog7 = Seq
+          (Input "x")
+          (While (Less (Var "x") (Const 31))
+            (Seq
+              (Output (Var "x"))
+              (Assign "x" (Plus (Var "x") (Const 1)))
+              )
+          )
+
+
+test7 :: IO ()
+test7 = eval prog7 eIniTest
